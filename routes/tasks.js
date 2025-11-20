@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const logger = require('../utils/logger');
+
 // GET all tasks with pagination and search (excluding soft deleted)
 router.get('/', async (req, res) => {
     try {
+        throw new Error('Intentional test error');
         let { page, limit, q } = req.query;
 
         // Set defaults and validate
@@ -45,7 +48,7 @@ router.get('/', async (req, res) => {
             data: rows
         });
     } catch (err) {
-        console.error(err);
+        logger.error(err.message, { stack: err.stack });
         res.status(500).json({ error: 'Database error' });
     }
 });
@@ -56,7 +59,7 @@ router.get('/deleted', async (req, res) => {
         const [rows] = await db.query('SELECT * FROM tasks WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC');
         res.json(rows);
     } catch (err) {
-        console.error(err);
+        logger.error(err.message, { stack: err.stack });
         res.status(500).json({ error: 'Database error' });
     }
 });
@@ -74,7 +77,7 @@ router.post('/', async (req, res) => {
             [result.insertId]);
         res.status(201).json(newTask[0]);
     } catch (err) {
-        console.error(err);
+        logger.error(err.message, { stack: err.stack });
         res.status(500).json({ error: 'Failed to create task' });
     }
 });
@@ -101,7 +104,7 @@ router.put('/:id', async (req, res) => {
         const [updated] = await db.query('SELECT * FROM tasks WHERE id = ?', [id]);
         res.json(updated[0]);
     } catch (err) {
-        console.error(err);
+        logger.error(err.message, { stack: err.stack });
         res.status(500).json({ error: 'Failed to update task' });
     }
 });
@@ -117,7 +120,7 @@ router.put('/:id/restore', async (req, res) => {
         const [restored] = await db.query('SELECT * FROM tasks WHERE id = ?', [id]);
         res.json(restored[0]);
     } catch (err) {
-        console.error(err);
+        logger.error(err.message, { stack: err.stack });
         res.status(500).json({ error: 'Failed to restore task' });
     }
 });
@@ -132,7 +135,7 @@ router.delete('/:id', async (req, res) => {
         }
         res.status(204).send();
     } catch (err) {
-        console.error(err);
+        logger.error(err.message, { stack: err.stack });
         res.status(500).json({ error: 'Failed to delete task' });
     }
 });
